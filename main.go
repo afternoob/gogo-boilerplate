@@ -1,6 +1,9 @@
 package main
 
 import (
+	"io"
+	"log"
+
 	"github.com/afternoob/gogo-boilerplate/app"
 	"github.com/afternoob/gogo-boilerplate/config"
 	companyRepo "github.com/afternoob/gogo-boilerplate/repository/company/store"
@@ -9,18 +12,44 @@ import (
 	staffService "github.com/afternoob/gogo-boilerplate/service/staff"
 	"github.com/devit-tel/goxid"
 	"github.com/gin-gonic/gin"
+	"github.com/opentracing-contrib/go-gin/ginhttp"
+	"github.com/opentracing/opentracing-go"
+	"github.com/uber/jaeger-client-go"
+	"github.com/uber/jaeger-client-go/transport/zipkin"
 )
 
 func main() {
-	g := gin.Default()
+	appConfig := config.Get()
 
-	_ = newApp().RegisterRoute(g)
-	_ = g.Run()
+	tracer, closer := setupJaeger(appConfig)
+	defer closer.Close()
+
+	router := gin.Default()
+	router.Use(ginhttp.Middleware(tracer))
+
+	_ = newApp(appConfig).RegisterRoute(router)
+	_ = router.Run()
 }
 
-func newApp() *app.App {
+func setupJaeger(appConfig *config.Config) (opentracing.Tracer, io.Closer) {
+	transport, err := zipkin.NewHTTPTransport(
+		appConfig.JaegerEndpoint,
+		zipkin.HTTPBatchSize(10),
+		zipkin.HTTPLogger(jaeger.StdLogger),
+	)
+	if err != nil {
+		log.Fatalf("Cannot initialize HTTP transport: %v", err)
+	}
+
+	return jaeger.NewTracer(
+		"GoGoBoilerplate",
+		jaeger.NewConstSampler(true),
+		jaeger.NewRemoteReporter(transport),
+	)
+}
+
+func newApp(appConfig *config.Config) *app.App {
 	xid := goxid.New()
-	appConfig := config.Get()
 
 	companyStore := companyRepo.New(appConfig.MongoDBEndpoint, appConfig.MongoDBName, appConfig.MongoDBCompanyTableName)
 	company := companyService.New(xid, companyStore)

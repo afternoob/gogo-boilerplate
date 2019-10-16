@@ -4,6 +4,7 @@ import (
 	"context"
 
 	domain "github.com/afternoob/gogo-boilerplate/domain/staff"
+	"github.com/afternoob/gogo-boilerplate/lib/jaegerstart"
 	repoStaff "github.com/afternoob/gogo-boilerplate/repository/staff"
 	"github.com/devit-tel/goerror"
 	"go.mongodb.org/mongo-driver/bson"
@@ -59,6 +60,10 @@ func (s *Store) Save(ctx context.Context, staff *domain.Staff) goerror.Error {
 }
 
 func (s *Store) GetStaffsByCompany(ctx context.Context, companyId string, offset, limit int64) ([]*domain.Staff, goerror.Error) {
+	if span := jaegerstart.StartNewSpan(ctx, "GetStaffsByCompany"); span != nil {
+		defer span.Finish()
+	}
+
 	cursor, err := s.collectionStaff().Find(ctx, bson.M{"companyId": companyId}, options.Find().SetLimit(limit).SetSkip(offset))
 	if err != nil {
 		return nil, repoStaff.ErrUnableGetStaffs.WithInput(companyId).WithCause(err)

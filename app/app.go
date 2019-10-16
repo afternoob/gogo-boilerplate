@@ -18,11 +18,11 @@ func New(staffService staff.Service, companyService company.Service) *App {
 	}
 }
 
-func (app *App) RegisterRoute(ge *gin.Engine) *App {
-	ge.POST("/staff", app.CreateStaff)
-	ge.PUT("/staff", app.UpdateStaff)
-	ge.GET("/staffsByCompany", app.GetStaffsByCompany)
-	ge.POST("/company", app.CreateCompany)
+func (app *App) RegisterRoute(router *gin.Engine) *App {
+	router.POST("/staff", app.CreateStaff)
+	router.PUT("/staff", app.UpdateStaff)
+	router.GET("/staffsByCompany", app.GetStaffsByCompany)
+	router.POST("/company", app.CreateCompany)
 
 	return app
 }

@@ -9,6 +9,7 @@ type Config struct {
 	MongoDBName             string `env:"MONGODB_NAME,required"`
 	MongoDBStaffTableName   string `env:"MONGODB_STAFF_TABLE_NAME,required"`
 	MongoDBCompanyTableName string `env:"MONGODB_COMPANY_TABLE_NAME,required"`
+	JaegerEndpoint          string `env:"JAEGER_ENDPOINT,required"`
 }
 
 func Get() *Config {
