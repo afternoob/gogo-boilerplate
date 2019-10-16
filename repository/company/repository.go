@@ -1,6 +1,8 @@
 package company
 
 import (
+	"context"
+
 	"github.com/afternoob/gogo-boilerplate/domain/company"
 	"github.com/devit-tel/goerror"
 )
@@ -13,6 +15,6 @@ var (
 
 //go:generate mockery -name=Repository
 type Repository interface {
-	Save(company *company.Company) goerror.Error
-	Get(companyId string) (*company.Company, goerror.Error)
+	Save(ctx context.Context, company *company.Company) goerror.Error
+	Get(ctx context.Context, companyId string) (*company.Company, goerror.Error)
 }

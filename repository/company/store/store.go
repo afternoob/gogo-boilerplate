@@ -1,30 +1,59 @@
 package store
 
 import (
+	"context"
+
 	domain "github.com/afternoob/gogo-boilerplate/domain/company"
 	repoCompany "github.com/afternoob/gogo-boilerplate/repository/company"
 	"github.com/devit-tel/goerror"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func New() *Store {
-	return &Store{Data: map[string]*domain.Company{}}
-}
-
 type Store struct {
-	Data map[string]*domain.Company
+	mongo          *mongo.Client
+	dbName         string
+	collectionName string
 }
 
-func (s *Store) Get(companyId string) (*domain.Company, goerror.Error) {
-	company, ok := s.Data[companyId]
-	if !ok {
-		return nil, repoCompany.ErrCompanyNotFound.WithInput(companyId)
+func New(mongoEndpoint, dbName, collectionName string) *Store {
+	clientOptions := options.Client().ApplyURI(mongoEndpoint)
+
+	db, err := mongo.Connect(context.Background(), clientOptions)
+	if err != nil {
+		panic(err)
+	}
+
+	return &Store{
+		dbName:         dbName,
+		collectionName: collectionName,
+		mongo:          db,
+	}
+}
+
+func (s *Store) collectionCompany() *mongo.Collection {
+	return s.mongo.Database(s.dbName).Collection(s.collectionName)
+}
+
+func (s *Store) Get(ctx context.Context, companyId string) (*domain.Company, goerror.Error) {
+	company := &domain.Company{}
+	if err := s.collectionCompany().FindOne(ctx, bson.D{{"_id", companyId}}).Decode(company); err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, repoCompany.ErrCompanyNotFound.WithInput(companyId)
+		}
+
+		return nil, repoCompany.ErrUnableGetCompany.WithInput(companyId).WithCause(err)
 	}
 
 	return company, nil
 }
 
-func (s *Store) Save(company *domain.Company) goerror.Error {
-	s.Data[company.Id] = company
+func (s *Store) Save(ctx context.Context, company *domain.Company) goerror.Error {
+	_, err := s.collectionCompany().InsertOne(ctx, company)
+	if err != nil {
+		return repoCompany.ErrUnableSaveCompany.WithInput(company).WithCause(err)
+	}
 
 	return nil
 }

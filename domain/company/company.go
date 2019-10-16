@@ -1,8 +1,8 @@
 package company
 
 type Company struct {
-	Id   string
-	Name string
+	Id   string `bson:"_id"`
+	Name string `bson:"name"`
 }
 
 func Create(id, name string) *Company {

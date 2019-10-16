@@ -3,6 +3,7 @@
 package mocks
 
 import company "github.com/afternoob/gogo-boilerplate/domain/company"
+import context "context"
 import goerror "github.com/devit-tel/goerror"
 import mock "github.com/stretchr/testify/mock"
 
@@ -11,13 +12,13 @@ type Repository struct {
 	mock.Mock
 }
 
-// Get provides a mock function with given fields: companyId
-func (_m *Repository) Get(companyId string) (*company.Company, goerror.Error) {
-	ret := _m.Called(companyId)
+// Get provides a mock function with given fields: ctx, companyId
+func (_m *Repository) Get(ctx context.Context, companyId string) (*company.Company, goerror.Error) {
+	ret := _m.Called(ctx, companyId)
 
 	var r0 *company.Company
-	if rf, ok := ret.Get(0).(func(string) *company.Company); ok {
-		r0 = rf(companyId)
+	if rf, ok := ret.Get(0).(func(context.Context, string) *company.Company); ok {
+		r0 = rf(ctx, companyId)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*company.Company)
@@ -25,8 +26,8 @@ func (_m *Repository) Get(companyId string) (*company.Company, goerror.Error) {
 	}
 
 	var r1 goerror.Error
-	if rf, ok := ret.Get(1).(func(string) goerror.Error); ok {
-		r1 = rf(companyId)
+	if rf, ok := ret.Get(1).(func(context.Context, string) goerror.Error); ok {
+		r1 = rf(ctx, companyId)
 	} else {
 		if ret.Get(1) != nil {
 			r1 = ret.Get(1).(goerror.Error)
@@ -36,13 +37,13 @@ func (_m *Repository) Get(companyId string) (*company.Company, goerror.Error) {
 	return r0, r1
 }
 
-// Save provides a mock function with given fields: _a0
-func (_m *Repository) Save(_a0 *company.Company) goerror.Error {
-	ret := _m.Called(_a0)
+// Save provides a mock function with given fields: ctx, _a1
+func (_m *Repository) Save(ctx context.Context, _a1 *company.Company) goerror.Error {
+	ret := _m.Called(ctx, _a1)
 
 	var r0 goerror.Error
-	if rf, ok := ret.Get(0).(func(*company.Company) goerror.Error); ok {
-		r0 = rf(_a0)
+	if rf, ok := ret.Get(0).(func(context.Context, *company.Company) goerror.Error); ok {
+		r0 = rf(ctx, _a1)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(goerror.Error)

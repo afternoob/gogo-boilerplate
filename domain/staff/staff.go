@@ -5,12 +5,12 @@ import (
 )
 
 type Staff struct {
-	Id        string
-	CompanyId string
-	Name      string
-	Tel       string
-	CreatedAt int64
-	UpdatedAt int64
+	Id        string `bson:"_id"`
+	CompanyId string `bson:"companyId"`
+	Name      string `bson:"name"`
+	Tel       string `bson:"tel"`
+	CreatedAt int64  `bson:"createdAt"`
+	UpdatedAt int64  `bson:"updatedAt"`
 }
 
 func Create(id, companyId, name, tel string) *Staff {

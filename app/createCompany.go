@@ -3,40 +3,26 @@ package app
 import (
 	"net/http"
 
+	company2 "github.com/afternoob/gogo-boilerplate/app/inout/company"
 	serviceCompany "github.com/afternoob/gogo-boilerplate/service/company"
 	"github.com/devit-tel/goerror/ginresp"
 	"github.com/gin-gonic/gin"
 )
 
-type Company struct {
-	Name string `json:"name"`
-}
-
-type CreateCompanyInput struct {
-	Name string `json:"name" binding:"required"`
-}
-
-type CreateCompanyOutput struct {
-	Company *Company `json:"company"`
-}
-
 func (app *App) CreateCompany(c *gin.Context) {
-	input := &CreateCompanyInput{}
+	input := &company2.CreateCompanyInput{}
 	if err := c.ShouldBind(input); err != nil {
 		ginresp.RespValidateError(c, err)
 		return
 	}
 
-	company, err := app.companyService.CreateCompany(&serviceCompany.CreateCompanyInput{Name: input.Name})
+	company, err := app.companyService.CreateCompany(c.Request.Context(), &serviceCompany.CreateCompanyInput{Name: input.Name})
 	if err != nil {
 		ginresp.RespWithError(c, err)
 		return
 	}
 
-	// warning: maybe create new function for map response
-	c.JSON(http.StatusOK, &CreateCompanyOutput{
-		Company: &Company{
-			Name: company.Name,
-		},
+	c.JSON(http.StatusOK, &company2.CreateCompanyOutput{
+		Company: company2.ToCompanyOutput(company),
 	})
 }

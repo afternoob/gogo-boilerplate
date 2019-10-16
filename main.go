@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/afternoob/gogo-boilerplate/app"
+	"github.com/afternoob/gogo-boilerplate/config"
 	companyRepo "github.com/afternoob/gogo-boilerplate/repository/company/store"
 	staffRepo "github.com/afternoob/gogo-boilerplate/repository/staff/store"
 	companyService "github.com/afternoob/gogo-boilerplate/service/company"
@@ -14,16 +15,17 @@ func main() {
 	g := gin.Default()
 
 	_ = newApp().RegisterRoute(g)
-	g.Run()
+	_ = g.Run()
 }
 
 func newApp() *app.App {
 	xid := goxid.New()
+	appConfig := config.Get()
 
-	companyStore := companyRepo.New()
+	companyStore := companyRepo.New(appConfig.MongoDBEndpoint, appConfig.MongoDBName, appConfig.MongoDBCompanyTableName)
 	company := companyService.New(xid, companyStore)
 
-	staffStore := staffRepo.New()
+	staffStore := staffRepo.New(appConfig.MongoDBEndpoint, appConfig.MongoDBName, appConfig.MongoDBStaffTableName)
 	staff := staffService.New(xid, staffStore, companyStore)
 
 	return app.New(staff, company)

@@ -1,6 +1,8 @@
 package company
 
 import (
+	"context"
+
 	domainCompany "github.com/afternoob/gogo-boilerplate/domain/company"
 	"github.com/afternoob/gogo-boilerplate/repository/company"
 	"github.com/devit-tel/goerror"
@@ -9,7 +11,7 @@ import (
 
 //go:generate mockery -name=Service
 type Service interface {
-	CreateCompany(input *CreateCompanyInput) (*domainCompany.Company, goerror.Error)
+	CreateCompany(ctx context.Context, input *CreateCompanyInput) (*domainCompany.Company, goerror.Error)
 }
 
 type CompanyService struct {

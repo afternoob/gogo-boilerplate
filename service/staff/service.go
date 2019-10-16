@@ -1,6 +1,8 @@
 package staff
 
 import (
+	"context"
+
 	domainStaff "github.com/afternoob/gogo-boilerplate/domain/staff"
 	"github.com/afternoob/gogo-boilerplate/repository/company"
 	"github.com/afternoob/gogo-boilerplate/repository/staff"
@@ -10,9 +12,9 @@ import (
 
 //go:generate mockery -name=Service
 type Service interface {
-	GetStaffsByCompany(input *GetStaffsByCompanyInput) ([]*domainStaff.Staff, goerror.Error)
-	CreateStaff(input *CreateStaffInput) (*domainStaff.Staff, goerror.Error)
-	UpdateStaff(input *UpdateStaffInput) (*domainStaff.Staff, goerror.Error)
+	GetStaffsByCompany(ctx context.Context, input *GetStaffsByCompanyInput) ([]*domainStaff.Staff, goerror.Error)
+	CreateStaff(ctx context.Context, input *CreateStaffInput) (*domainStaff.Staff, goerror.Error)
+	UpdateStaff(ctx context.Context, input *UpdateStaffInput) (*domainStaff.Staff, goerror.Error)
 }
 
 type StaffService struct {

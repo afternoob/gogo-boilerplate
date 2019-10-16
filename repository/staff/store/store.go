@@ -1,49 +1,79 @@
 package store
 
 import (
+	"context"
+
 	domain "github.com/afternoob/gogo-boilerplate/domain/staff"
 	repoStaff "github.com/afternoob/gogo-boilerplate/repository/staff"
 	"github.com/devit-tel/goerror"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func New() *Store {
-	return &Store{Data: map[string]*domain.Staff{}}
+func New(mongoEndpoint, dbName, collectionName string) *Store {
+	clientOptions := options.Client().ApplyURI(mongoEndpoint)
+
+	db, err := mongo.Connect(context.Background(), clientOptions)
+	if err != nil {
+		panic(err)
+	}
+
+	return &Store{
+		dbName:         dbName,
+		collectionName: collectionName,
+		mongo:          db,
+	}
 }
 
 type Store struct {
-	Data map[string]*domain.Staff
+	mongo          *mongo.Client
+	dbName         string
+	collectionName string
 }
 
-func (s *Store) Get(staffId string) (*domain.Staff, goerror.Error) {
-	staff, ok := s.Data[staffId]
-	if !ok {
-		return nil, repoStaff.ErrStaffNotFound.WithInput(staffId)
+func (s *Store) collectionStaff() *mongo.Collection {
+	return s.mongo.Database(s.dbName).Collection(s.collectionName)
+}
+
+func (s *Store) Get(ctx context.Context, staffId string) (*domain.Staff, goerror.Error) {
+	staff := &domain.Staff{}
+	if err := s.collectionStaff().FindOne(ctx, bson.D{{"_id", staffId}}).Decode(staff); err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, repoStaff.ErrStaffNotFound.WithInput(staffId)
+		}
+
+		return nil, repoStaff.ErrUnableGetStaff.WithInput(staffId).WithCause(err)
 	}
 
 	return staff, nil
 }
 
-func (s *Store) Save(staff *domain.Staff) goerror.Error {
-	s.Data[staff.Id] = staff
+func (s *Store) Save(ctx context.Context, staff *domain.Staff) goerror.Error {
+	_, err := s.collectionStaff().InsertOne(ctx, staff)
+	if err != nil {
+		return repoStaff.ErrUnableSaveStaff.WithInput(staff).WithCause(err)
+	}
 
 	return nil
 }
 
-func (s *Store) GetStaffsByCompany(companyId string, offset, limit int) ([]*domain.Staff, goerror.Error) {
+func (s *Store) GetStaffsByCompany(ctx context.Context, companyId string, offset, limit int64) ([]*domain.Staff, goerror.Error) {
+	cursor, err := s.collectionStaff().Find(ctx, bson.M{"companyId": companyId}, options.Find().SetLimit(limit).SetSkip(offset))
+	if err != nil {
+		return nil, repoStaff.ErrUnableGetStaffs.WithInput(companyId).WithCause(err)
+	}
+	defer cursor.Close(ctx)
+
 	staffs := make([]*domain.Staff, 0)
-	for _, staff := range s.Data {
-		if staff.CompanyId == companyId {
-			staffs = append(staffs, staff)
+	for cursor.Next(ctx) {
+		staff := &domain.Staff{}
+		if err := cursor.Decode(staff); err != nil {
+			return nil, repoStaff.ErrUnableGetStaffs.WithInput(cursor.Current).WithCause(err)
 		}
+
+		staffs = append(staffs, staff)
 	}
 
-	if offset > len(staffs) {
-		return []*domain.Staff{}, nil
-	}
-
-	if limit > len(staffs) {
-		return staffs[offset:], nil
-	}
-
-	return staffs[offset:limit], nil
+	return staffs, nil
 }

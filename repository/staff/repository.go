@@ -1,6 +1,8 @@
 package staff
 
 import (
+	"context"
+
 	"github.com/afternoob/gogo-boilerplate/domain/staff"
 	"github.com/devit-tel/goerror"
 )
@@ -14,7 +16,7 @@ var (
 
 //go:generate mockery -name=Repository
 type Repository interface {
-	Get(staffId string) (*staff.Staff, goerror.Error)
-	GetStaffsByCompany(companyId string, offset, limit int) ([]*staff.Staff, goerror.Error)
-	Save(staff *staff.Staff) goerror.Error
+	Get(ctx context.Context, staffId string) (*staff.Staff, goerror.Error)
+	GetStaffsByCompany(ctx context.Context, companyId string, offset, limit int64) ([]*staff.Staff, goerror.Error)
+	Save(ctx context.Context, staff *staff.Staff) goerror.Error
 }
