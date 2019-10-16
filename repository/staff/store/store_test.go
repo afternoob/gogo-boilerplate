@@ -26,6 +26,23 @@ func setup() *Store {
 	return s
 }
 
+func (s *Store) withInitStaffs() *Store {
+	expectedStaffs := []*domain.Staff{
+		{Id: "staff_1", CompanyId: "company_1", Name: "tester_1", Tel: "088-999-8888", CreatedAt: 50, UpdatedAt: 100},
+		{Id: "staff_2", CompanyId: "company_1", Name: "tester_2", Tel: "081-333-4444", CreatedAt: 50, UpdatedAt: 100},
+		{Id: "staff_3", CompanyId: "company_2", Name: "tester_3", Tel: "056-666-7777", CreatedAt: 50, UpdatedAt: 100},
+		{Id: "staff_4", CompanyId: "company_3", Name: "tester_4", Tel: "082-111-6666", CreatedAt: 50, UpdatedAt: 100},
+	}
+
+	for _, staff := range expectedStaffs {
+		err := s.Save(context.Background(), staff)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return s
+}
+
 func TestStore_SaveAndGet(t *testing.T) {
 	s := setup()
 
@@ -49,29 +66,22 @@ func TestStore_GetNotFound(t *testing.T) {
 }
 
 func TestStore_GetStaffsByCompany(t *testing.T) {
-	s := setup()
-
-	expectedStaffs := []*domain.Staff{
-		{Id: "staff_1", CompanyId: "company_1", Name: "tester_1", Tel: "088-999-8888", CreatedAt: 50, UpdatedAt: 100},
-		{Id: "staff_2", CompanyId: "company_1", Name: "tester_2", Tel: "081-333-4444", CreatedAt: 50, UpdatedAt: 100},
-		{Id: "staff_3", CompanyId: "company_2", Name: "tester_3", Tel: "056-666-7777", CreatedAt: 50, UpdatedAt: 100},
-		{Id: "staff_4", CompanyId: "company_3", Name: "tester_4", Tel: "082-111-6666", CreatedAt: 50, UpdatedAt: 100},
-	}
-
-	for _, staff := range expectedStaffs {
-		err := s.Save(context.Background(), staff)
-		require.NoError(t, err)
-	}
+	s := setup().withInitStaffs()
 
 	staffs, err := s.GetStaffsByCompany(context.Background(), "company_1", 0, 10)
 	require.NoError(t, err)
 	require.Len(t, staffs, 2)
-	require.Equal(t, []*domain.Staff{expectedStaffs[0], expectedStaffs[1]}, staffs)
+	require.Equal(t, []*domain.Staff{
+		{Id: "staff_1", CompanyId: "company_1", Name: "tester_1", Tel: "088-999-8888", CreatedAt: 50, UpdatedAt: 100},
+		{Id: "staff_2", CompanyId: "company_1", Name: "tester_2", Tel: "081-333-4444", CreatedAt: 50, UpdatedAt: 100},
+	}, staffs)
 
 	staffs, err = s.GetStaffsByCompany(context.Background(), "company_1", 1, 1)
 	require.NoError(t, err)
 	require.Len(t, staffs, 1)
-	require.Equal(t, []*domain.Staff{expectedStaffs[1]}, staffs)
+	require.Equal(t, []*domain.Staff{
+		{Id: "staff_2", CompanyId: "company_1", Name: "tester_2", Tel: "081-333-4444", CreatedAt: 50, UpdatedAt: 100},
+	}, staffs)
 }
 
 func TestStore_GetStaffsByCompany_EmptyResult(t *testing.T) {
