@@ -4,6 +4,7 @@ import (
 	"context"
 
 	domain "github.com/afternoob/gogo-boilerplate/domain/company"
+	"github.com/afternoob/gogo-boilerplate/lib/jaegerstart"
 	repoCompany "github.com/afternoob/gogo-boilerplate/repository/company"
 	"github.com/devit-tel/goerror"
 	"go.mongodb.org/mongo-driver/bson"
@@ -37,6 +38,10 @@ func (s *Store) collectionCompany() *mongo.Collection {
 }
 
 func (s *Store) Get(ctx context.Context, companyId string) (*domain.Company, goerror.Error) {
+	if span := jaegerstart.StartNewSpan(ctx, "REPO_COMPANY_Get"); span != nil {
+		defer span.Finish()
+	}
+
 	company := &domain.Company{}
 	if err := s.collectionCompany().FindOne(ctx, bson.D{{"_id", companyId}}).Decode(company); err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -50,6 +55,10 @@ func (s *Store) Get(ctx context.Context, companyId string) (*domain.Company, goe
 }
 
 func (s *Store) Save(ctx context.Context, company *domain.Company) goerror.Error {
+	if span := jaegerstart.StartNewSpan(ctx, "REPO_COMPANY_Save"); span != nil {
+		defer span.Finish()
+	}
+
 	_, err := s.collectionCompany().InsertOne(ctx, company)
 	if err != nil {
 		return repoCompany.ErrUnableSaveCompany.WithInput(company).WithCause(err)

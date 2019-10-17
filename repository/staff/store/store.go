@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.uber.org/zap"
 )
 
 func New(mongoEndpoint, dbName, collectionName string) *Store {
@@ -38,6 +39,10 @@ func (s *Store) collectionStaff() *mongo.Collection {
 }
 
 func (s *Store) Get(ctx context.Context, staffId string) (*domain.Staff, goerror.Error) {
+	if span := jaegerstart.StartNewSpan(ctx, "REPO_STAFF_Get"); span != nil {
+		defer span.Finish()
+	}
+
 	staff := &domain.Staff{}
 	if err := s.collectionStaff().FindOne(ctx, bson.D{{"_id", staffId}}).Decode(staff); err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -51,6 +56,10 @@ func (s *Store) Get(ctx context.Context, staffId string) (*domain.Staff, goerror
 }
 
 func (s *Store) Save(ctx context.Context, staff *domain.Staff) goerror.Error {
+	if span := jaegerstart.StartNewSpan(ctx, "REPO_STAFF_Save"); span != nil {
+		defer span.Finish()
+	}
+
 	_, err := s.collectionStaff().InsertOne(ctx, staff)
 	if err != nil {
 		return repoStaff.ErrUnableSaveStaff.WithInput(staff).WithCause(err)
@@ -60,7 +69,8 @@ func (s *Store) Save(ctx context.Context, staff *domain.Staff) goerror.Error {
 }
 
 func (s *Store) GetStaffsByCompany(ctx context.Context, companyId string, offset, limit int64) ([]*domain.Staff, goerror.Error) {
-	if span := jaegerstart.StartNewSpan(ctx, "GetStaffsByCompany"); span != nil {
+	if span := jaegerstart.StartNewSpan(ctx, "REPO_STAFF_GetStaffsByCompany"); span != nil {
+		zap.S().Infof("DB_LOG", "test1", "test2")
 		defer span.Finish()
 	}
 
