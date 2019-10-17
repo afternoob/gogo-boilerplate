@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/afternoob/gogo-boilerplate/config"
-	"github.com/afternoob/gogo-boilerplate/lib/jaegerstart"
+	"github.com/devit-tel/jaegerstart"
 	"github.com/gin-gonic/gin"
 	"github.com/opentracing-contrib/go-gin/ginhttp"
 )

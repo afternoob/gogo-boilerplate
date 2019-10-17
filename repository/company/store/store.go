@@ -4,9 +4,9 @@ import (
 	"context"
 
 	domain "github.com/afternoob/gogo-boilerplate/domain/company"
-	"github.com/afternoob/gogo-boilerplate/lib/jaegerstart"
 	repoCompany "github.com/afternoob/gogo-boilerplate/repository/company"
 	"github.com/devit-tel/goerror"
+	"github.com/devit-tel/jaegerstart"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"

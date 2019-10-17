@@ -8,8 +8,8 @@ require (
 	github.com/devit-tel/goerror v0.0.0-20191015075050-b0665b653b7e
 	github.com/devit-tel/gotime v0.0.0-20191011035800-6db99a579f46
 	github.com/devit-tel/goxid v0.0.0-20191015090949-84147034cdac
+	github.com/devit-tel/jaegerstart v0.0.0-20191017113228-d4bb0ea109c0
 	github.com/gin-contrib/sse v0.1.0 // indirect
-	github.com/gin-contrib/zap v0.0.0-20190911144541-f473495929db
 	github.com/gin-gonic/gin v1.4.0
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/golang/protobuf v1.3.2 // indirect
