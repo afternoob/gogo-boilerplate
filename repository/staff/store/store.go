@@ -10,7 +10,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.uber.org/zap"
 )
 
 func New(mongoEndpoint, dbName, collectionName string) *Store {
@@ -70,7 +69,6 @@ func (s *Store) Save(ctx context.Context, staff *domain.Staff) goerror.Error {
 
 func (s *Store) GetStaffsByCompany(ctx context.Context, companyId string, offset, limit int64) ([]*domain.Staff, goerror.Error) {
 	if span := jaegerstart.StartNewSpan(ctx, "REPO_STAFF_GetStaffsByCompany"); span != nil {
-		zap.S().Infof("DB_LOG", "test1", "test2")
 		defer span.Finish()
 	}
 
